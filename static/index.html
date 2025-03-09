@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gin 即時聊天</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="usernameBox">
+        <input type="text" id="username" placeholder="輸入你的名字">
+        <button onclick="joinChat()">加入聊天室</button>
+    </div>
+
+    <div id="container" style="display: none;">
+        <div id="user-list">
+            <h3>在線用戶 (<span id="user-count">0</span>)</h3>
+            <ul id="usernames"></ul>
+        </div>
+
+        <div id="chat-container">
+            <div id="chatbox"></div>
+            <div id="input-container">
+                <input type="text" id="message" placeholder="輸入訊息" onkeydown="handleKeyPress(event)">
+                <button onclick="sendMessage()">發送</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { joinChat, handleKeyPress, sendMessage } from "./chat.js";
+        import { updateUserList, sendFriendRequest, startPrivateChat } from "./users.js";
+
+        window.joinChat = joinChat;
+        window.handleKeyPress = handleKeyPress;
+        window.sendMessage = sendMessage;
+        window.sendFriendRequest = sendFriendRequest;
+        window.startPrivateChat = startPrivateChat;
+    </script>
+</body>
+</html>
