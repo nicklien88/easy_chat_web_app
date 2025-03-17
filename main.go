@@ -85,6 +85,7 @@ func handleConnections(c *gin.Context) {
 		switch msg.Type {
 		case "friendRequest":
 			handleFriendRequest(msg)
+			fmt.Println("add friend")
 		case "privateMessage":
 			handlePrivateMessage(msg)
 		case "publicMessage":

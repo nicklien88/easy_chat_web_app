@@ -1,9 +1,13 @@
 import { updateUserList } from "./users.js";
 import { displayMessage } from "./ui.js";
 
-let socket;
-let username;
-let currentChat = "public"; // "public" 或私聊對象名稱
+export let socket;
+export let username;
+export let currentChat = "public"; // "public" 或私聊對象名稱
+
+export function setCurrentChat(newChat) {
+    currentChat = newChat;
+}
 
 export function joinChat() {
     username = document.getElementById("username").value;

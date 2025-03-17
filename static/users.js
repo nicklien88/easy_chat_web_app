@@ -1,3 +1,5 @@
+import { socket, username, setCurrentChat } from "./chat.js";
+
 export function updateUserList(users) {
     let userListElement = document.getElementById("usernames");
     userListElement.innerHTML = "";
@@ -29,10 +31,14 @@ export function updateUserList(users) {
 }
 
 export function sendFriendRequest(friendName) {
-    socket.send(JSON.stringify({ type: "friendRequest", username, to: friendName }));
+    if (socket && username) {
+        socket.send(JSON.stringify({ type: "friendRequest", username, to: friendName }));
+    }
 }
 
 export function startPrivateChat(friendName) {
-    currentChat = friendName;
-    alert("與 " + friendName + " 私聊中！");
+    if (socket) {
+        setCurrentChat(friendName); // ✅ 正確修改 currentChat
+        alert("與 " + friendName + " 私聊中！");
+    }
 }

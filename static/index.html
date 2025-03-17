@@ -9,7 +9,7 @@
 <body>
     <div id="usernameBox">
         <input type="text" id="username" placeholder="輸入你的名字">
-        <button onclick="joinChat()">加入聊天室</button>
+        <button id="joinBtn">加入聊天室</button>
     </div>
 
     <div id="container" style="display: none;">
@@ -21,21 +21,32 @@
         <div id="chat-container">
             <div id="chatbox"></div>
             <div id="input-container">
-                <input type="text" id="message" placeholder="輸入訊息" onkeydown="handleKeyPress(event)">
-                <button onclick="sendMessage()">發送</button>
+                <input type="text" id="message" placeholder="輸入訊息">
+                <button id="sendBtn">發送</button>
             </div>
         </div>
     </div>
 
     <script type="module">
-        import { joinChat, handleKeyPress, sendMessage } from "./chat.js";
-        import { updateUserList, sendFriendRequest, startPrivateChat } from "./users.js";
+        // Generate a timestamp
+        const timestamp = new Date().getTime();
 
-        window.joinChat = joinChat;
-        window.handleKeyPress = handleKeyPress;
-        window.sendMessage = sendMessage;
-        window.sendFriendRequest = sendFriendRequest;
-        window.startPrivateChat = startPrivateChat;
+        // Dynamically import modules with timestamp
+        Promise.all([
+            import(`./chat.js?v=${timestamp}`),
+            import(`./users.js?v=${timestamp}`)
+        ]).then(([chatModule, usersModule]) => {
+            // Bind functions from chat.js
+            document.getElementById("joinBtn").addEventListener("click", chatModule.joinChat);
+            document.getElementById("sendBtn").addEventListener("click", chatModule.sendMessage);
+            document.getElementById("message").addEventListener("keydown", chatModule.handleKeyPress);
+
+            // Make certain functions globally accessible
+            window.sendFriendRequest = usersModule.sendFriendRequest;
+            window.startPrivateChat = usersModule.startPrivateChat;
+        }).catch(error => {
+            console.error("Error loading modules:", error);
+        });
     </script>
 </body>
 </html>
