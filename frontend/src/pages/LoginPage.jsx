@@ -20,8 +20,12 @@ export default function LoginPage() {
     };
 
     return (
+        
         <div className="login-container">
             <h2>登入</h2>
+            <div className="bg-blue-500 text-white p-4 rounded">
+                Tailwind 樣式應該出現了！
+            </div>
             <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
             <input type="password" placeholder="密碼" value={password} onChange={(e) => setPassword(e.target.value)} />
             <button onClick={handleLogin}>登入</button>
