@@ -6,6 +6,12 @@ export default {
     ],
     theme: {
         extend: {
+            colors: {
+                background: 'hsl(var(--background))',
+                foreground: 'hsl(var(--foreground))',
+                primary: 'hsl(var(--primary))',
+                'primary-foreground': 'hsl(var(--primary-foreground))',
+            },
             keyframes: {
                 'slide-down': {
                     '0%': { transform: 'translateY(-100%)', opacity: '0' },
