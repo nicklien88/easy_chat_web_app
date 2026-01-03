@@ -29,8 +29,8 @@ export default function HomePage() {
         getUnreadCount(),
       ]);
       
-      console.log("Friends 資料:", friendsData.data);
-      console.log("Recent Chats 資料:", chatsData.data);
+      // console.log("Friends 資料:", friendsData.data);
+      // console.log("Recent Chats 資料:", chatsData.data);
       setFriends(friendsData.data || []);
       setRecentChats(chatsData.data || []);
       setFriendRequests(requestsData.data || []);
@@ -152,7 +152,7 @@ export default function HomePage() {
                   <li
                     key={chat.friend.id}
                     className="py-3 px-4 hover:bg-gray-50 cursor-pointer rounded-md transition"
-                    onClick={() => navigate(`/chat/${chat.friend.id}`)}
+                    onClick={() => navigate(`/chat/${chat.friend.id}`, { state: { friendName: chat.friend.display_name } })}
                   >
                     <div className="flex justify-between items-center">
                       <div>

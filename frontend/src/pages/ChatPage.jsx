@@ -1,14 +1,15 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { getMessages, sendMessage as sendChatMessage, markAsRead } from "../api/chat";
 import wsClient from "../api/websocket";
 
 export default function ChatPage() {
+    const location = useLocation();
+    const { friendName } = location.state || {};
     const { friendId } = useParams();
     const [messages, setMessages] = useState([]);
     const [message, setMessage] = useState("");
-    const [friendInfo, setFriendInfo] = useState(null);
     const [loading, setLoading] = useState(true);
     const [sending, setSending] = useState(false);
     const messagesEndRef = useRef(null);
@@ -61,8 +62,6 @@ export default function ChatPage() {
                 const messages = response.data.messages || [];
                 setMessages(messages);
                 console.log("response.data:", response.data);
-                console.log("Friend Info:", response.data.friend);
-                setFriendInfo(response.data.friend);
                 
                 // 標記未讀訊息為已讀
                 const unreadMessages = messages.filter(
@@ -139,7 +138,7 @@ export default function ChatPage() {
                 </button>
                 <div className="flex-1">
                     <h1 className="text-xl font-bold">
-                        {friendInfo?.display_name || friendInfo?.username || `使用者 ${friendId}`}
+                        {friendName}
                     </h1>
                 </div>
             </header>
@@ -155,7 +154,7 @@ export default function ChatPage() {
                         const isMe = msg.sender_id === user.id;
                         return (
                             <div
-                                key={msg.id || index}
+                                key={msg.id || msg.timestamp}
                                 className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
                             >
                                 <div
@@ -171,7 +170,7 @@ export default function ChatPage() {
                                             isMe ? 'text-blue-100' : 'text-gray-500'
                                         }`}
                                     >
-                                        {formatTime(msg.created_at)}
+                                        {formatTime(msg.created_at || msg.timestamp)}
                                         {isMe && msg.is_read && ' ✓✓'}
                                     </div>
                                 </div>
