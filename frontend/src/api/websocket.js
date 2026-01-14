@@ -48,6 +48,15 @@ class WebSocketClient {
             case 'read':
               this.emit('read', message);
               break;
+            case 'friend_request':
+              this.emit('friend_request', message);
+              break;
+            case 'friend_accepted':
+              this.emit('friend_accepted', message);
+              break;
+            case 'friend_rejected':
+              this.emit('friend_rejected', message);
+              break;
             default:
               this.emit('unknown', message);
           }

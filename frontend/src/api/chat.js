@@ -1,11 +1,29 @@
 import { apiClient } from './client';
 
 // 發送訊息
-export const sendMessage = async (receiverId, content, messageType = 'text') => {
+export const sendMessage = async (receiverId, content, messageType = 'text', fileData = null) => {
   return await apiClient.post('/chat/send', {
     receiver_id: receiverId,
     content,
     message_type: messageType,
+    file_url: fileData?.file_url,
+    file_name: fileData?.file_name,
+    file_size: fileData?.file_size,
+  });
+};
+
+// 上傳檔案
+export const uploadFile = async (file, fileType) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  if (fileType) {
+    formData.append('type', fileType);
+  }
+  
+  return await apiClient.post('/chat/upload', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
   });
 };
 

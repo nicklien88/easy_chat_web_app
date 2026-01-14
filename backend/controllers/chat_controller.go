@@ -1,11 +1,16 @@
 package controllers
 
 import (
+	"fmt"
 	"gin-project/config"
 	"gin-project/middleware"
 	"gin-project/models"
 	"gin-project/utils"
+	"io"
+	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -16,6 +21,9 @@ type SendMessageInput struct {
 	ReceiverID  uint   `json:"receiver_id" binding:"required"`
 	Content     string `json:"content" binding:"required"`
 	MessageType string `json:"message_type"`
+	FileURL     string `json:"file_url"`
+	FileName    string `json:"file_name"`
+	FileSize    int64  `json:"file_size"`
 }
 
 // SendMessage 發送訊息
@@ -34,7 +42,7 @@ func SendMessage(c *gin.Context) {
 	}
 
 	// 驗證訊息類型
-	if input.MessageType != "text" && input.MessageType != "image" && input.MessageType != "file" {
+	if input.MessageType != "text" && input.MessageType != "image" && input.MessageType != "video" && input.MessageType != "file" {
 		utils.BadRequest(c, "無效的訊息類型")
 		return
 	}
@@ -68,6 +76,9 @@ func SendMessage(c *gin.Context) {
 		ReceiverID:  input.ReceiverID,
 		Content:     input.Content,
 		MessageType: input.MessageType,
+		FileURL:     input.FileURL,
+		FileName:    input.FileName,
+		FileSize:    input.FileSize,
 		IsRead:      false,
 	}
 
@@ -279,4 +290,84 @@ func GetRecentChats(c *gin.Context) {
 	}
 
 	utils.SuccessWithData(c, chatsWithUser)
+}
+
+// UploadFile 上傳檔案
+func UploadFile(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+
+	// 解析 multipart form
+	file, err := c.FormFile("file")
+	if err != nil {
+		utils.BadRequest(c, "未選擇檔案")
+		return
+	}
+
+	// 檢查檔案大小 (限制 50MB)
+	if file.Size > 50*1024*1024 {
+		utils.BadRequest(c, "檔案大小不能超過 50MB")
+		return
+	}
+
+	// 取得檔案類型
+	fileType := c.PostForm("type") // image, video, file
+	if fileType == "" {
+		// 根據副檔名自動判斷
+		ext := strings.ToLower(filepath.Ext(file.Filename))
+		switch ext {
+		case ".jpg", ".jpeg", ".png", ".gif", ".webp":
+			fileType = "image"
+		case ".mp4", ".mov", ".avi", ".mkv", ".webm":
+			fileType = "video"
+		default:
+			fileType = "file"
+		}
+	}
+
+	// 驗證檔案類型
+	if fileType != "image" && fileType != "video" && fileType != "file" {
+		utils.BadRequest(c, "無效的檔案類型")
+		return
+	}
+
+	// 建立上傳目錄
+	uploadDir := filepath.Join("uploads", fileType+"s")
+	if err := os.MkdirAll(uploadDir, 0755); err != nil {
+		utils.InternalError(c, "建立上傳目錄失敗")
+		return
+	}
+
+	// 生成唯一檔名
+	ext := filepath.Ext(file.Filename)
+	filename := fmt.Sprintf("%d_%d%s", userID, time.Now().Unix(), ext)
+	filePath := filepath.Join(uploadDir, filename)
+
+	// 儲存檔案
+	src, err := file.Open()
+	if err != nil {
+		utils.InternalError(c, "開啟檔案失敗")
+		return
+	}
+	defer src.Close()
+
+	dst, err := os.Create(filePath)
+	if err != nil {
+		utils.InternalError(c, "建立檔案失敗")
+		return
+	}
+	defer dst.Close()
+
+	if _, err = io.Copy(dst, src); err != nil {
+		utils.InternalError(c, "儲存檔案失敗")
+		return
+	}
+
+	// 返回檔案資訊
+	fileURL := fmt.Sprintf("/uploads/%ss/%s", fileType, filename)
+	utils.SuccessWithData(c, gin.H{
+		"file_url":  fileURL,
+		"file_name": file.Filename,
+		"file_size": file.Size,
+		"file_type": fileType,
+	})
 }

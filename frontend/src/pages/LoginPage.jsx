@@ -49,7 +49,7 @@ export default function LoginPage() {
                     
                     <input
                         type="text"
-                        placeholder="使用者名稱"
+                        placeholder="使用者名稱或電子郵件"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         className="w-full border p-2 rounded mb-4"

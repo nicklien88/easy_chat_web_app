@@ -3,6 +3,7 @@ import axios from 'axios';
 // API 基礎配置
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 const WS_BASE_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8080/api/ws';
+const STATIC_BASE_URL = import.meta.env.VITE_STATIC_URL || 'http://localhost:8080';
 
 // 創建 axios 實例
 const apiClient = axios.create({
@@ -20,6 +21,12 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // 如果是 FormData，刪除 Content-Type 讓瀏覽器自動設置（包含 boundary）
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
+    
     return config;
   },
   (error) => {
@@ -52,4 +59,4 @@ apiClient.interceptors.response.use(
   }
 );
 
-export { apiClient, API_BASE_URL, WS_BASE_URL };
+export { apiClient, API_BASE_URL, WS_BASE_URL, STATIC_BASE_URL };

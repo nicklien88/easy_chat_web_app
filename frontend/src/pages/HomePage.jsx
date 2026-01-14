@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { getFriends, sendFriendRequest, getFriendRequests, acceptFriendRequest, rejectFriendRequest } from "../api/friend";
 import { getRecentChats, getUnreadCount } from "../api/chat";
+import wsClient from "../api/websocket";
 
 export default function HomePage() {
   const [friends, setFriends] = useState([]);
@@ -17,6 +18,46 @@ export default function HomePage() {
 
   useEffect(() => {
     fetchData();
+
+    // 監聽 WebSocket 訊息以即時更新
+    const handleNewMessage = (msg) => {
+      console.log('HomePage 收到新訊息:', msg);
+      // 重新載入聊天列表和未讀數量
+      fetchData();
+    };
+
+    // 監聽好友請求
+    const handleFriendRequest = (msg) => {
+      console.log('HomePage 收到好友請求:', msg);
+      // 重新載入資料以顯示新的好友請求
+      fetchData();
+    };
+
+    // 監聽好友請求被接受
+    const handleFriendAccepted = (msg) => {
+      console.log('HomePage 好友請求被接受:', msg);
+      // 重新載入資料以更新好友列表
+      fetchData();
+    };
+
+    // 監聽好友請求被拒絕
+    const handleFriendRejected = (msg) => {
+      console.log('HomePage 好友請求被拒絕:', msg);
+      // 重新載入資料
+      fetchData();
+    };
+
+    wsClient.on('message', handleNewMessage);
+    wsClient.on('friend_request', handleFriendRequest);
+    wsClient.on('friend_accepted', handleFriendAccepted);
+    wsClient.on('friend_rejected', handleFriendRejected);
+
+    return () => {
+      wsClient.off('message', handleNewMessage);
+      wsClient.off('friend_request', handleFriendRequest);
+      wsClient.off('friend_accepted', handleFriendAccepted);
+      wsClient.off('friend_rejected', handleFriendRejected);
+    };
   }, []);
 
   const fetchData = async () => {

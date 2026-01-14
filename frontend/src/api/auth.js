@@ -18,9 +18,12 @@ export const register = async (username, email, password) => {
 };
 
 // 登入
-export const login = async (username, password) => {
+export const login = async (usernameOrEmail, password) => {
+  // 判斷輸入是 email 還是 username
+  const isEmail = usernameOrEmail.includes('@');
+  
   const response = await apiClient.post('/login', {
-    username,
+    ...(isEmail ? { email: usernameOrEmail } : { username: usernameOrEmail }),
     password,
   });
   

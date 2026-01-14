@@ -1,10 +1,14 @@
 package controllers
 
 import (
+	"fmt"
 	"gin-project/config"
 	"gin-project/middleware"
 	"gin-project/models"
 	"gin-project/utils"
+	"os"
+	"path/filepath"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -32,24 +36,36 @@ type UpdateProfileRequest struct {
 func UpdateProfile(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 
-	var req UpdateProfileRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.BadRequest(c, "請求資料格式錯誤")
-		return
-	}
-
 	var user models.User
 	if err := config.DB.First(&user, userID).Error; err != nil {
 		utils.NotFound(c, "使用者不存在")
 		return
 	}
 
-	// 更新資料
-	if req.DisplayName != "" {
-		user.DisplayName = req.DisplayName
+	// 統一使用 multipart form 處理
+	displayName := c.PostForm("display_name")
+	if displayName != "" {
+		user.DisplayName = displayName
 	}
-	if req.AvatarURL != "" {
-		user.AvatarURL = req.AvatarURL
+
+	// 處理頭像上傳
+	file, err := c.FormFile("avatar")
+	if err == nil {
+		// 生成唯一的文件名
+		ext := filepath.Ext(file.Filename)
+		filename := fmt.Sprintf("avatar_%d_%d%s", userID, time.Now().Unix(), ext)
+		savePath := filepath.Join("uploads", "avatars", filename)
+
+		// 確保目錄存在
+		os.MkdirAll(filepath.Join("uploads", "avatars"), 0755)
+
+		// 保存文件
+		if err := c.SaveUploadedFile(file, savePath); err != nil {
+			utils.InternalError(c, "頭像上傳失敗")
+			return
+		}
+
+		user.AvatarURL = "/" + savePath
 	}
 
 	if err := config.DB.Save(&user).Error; err != nil {

@@ -12,7 +12,10 @@ type Message struct {
 	SenderID    uint           `gorm:"not null;index:idx_sender_receiver" json:"sender_id"`
 	ReceiverID  uint           `gorm:"not null;index:idx_sender_receiver" json:"receiver_id"`
 	Content     string         `gorm:"type:text;not null" json:"content"`
-	MessageType string         `gorm:"type:enum('text','image','file');default:'text'" json:"message_type"`
+	MessageType string         `gorm:"type:enum('text','image','video','file');default:'text'" json:"message_type"`
+	FileURL     string         `gorm:"type:varchar(500)" json:"file_url,omitempty"`
+	FileName    string         `gorm:"type:varchar(255)" json:"file_name,omitempty"`
+	FileSize    int64          `gorm:"type:bigint" json:"file_size,omitempty"`
 	IsRead      bool           `gorm:"default:false;index" json:"is_read"`
 	CreatedAt   time.Time      `gorm:"index" json:"created_at"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
@@ -34,6 +37,9 @@ type MessageResponse struct {
 	ReceiverID  uint         `json:"receiver_id"`
 	Content     string       `json:"content"`
 	MessageType string       `json:"message_type"`
+	FileURL     string       `json:"file_url,omitempty"`
+	FileName    string       `json:"file_name,omitempty"`
+	FileSize    int64        `json:"file_size,omitempty"`
 	IsRead      bool         `json:"is_read"`
 	CreatedAt   time.Time    `json:"created_at"`
 	Sender      UserResponse `json:"sender,omitempty"`
@@ -47,6 +53,9 @@ func (m *Message) ToResponse() MessageResponse {
 		ReceiverID:  m.ReceiverID,
 		Content:     m.Content,
 		MessageType: m.MessageType,
+		FileURL:     m.FileURL,
+		FileName:    m.FileName,
+		FileSize:    m.FileSize,
 		IsRead:      m.IsRead,
 		CreatedAt:   m.CreatedAt,
 		Sender:      m.Sender.ToResponse(),

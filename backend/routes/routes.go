@@ -42,15 +42,16 @@ func SetupRoutes(r *gin.Engine, hub *services.Hub) {
 			auth.GET("/friends", controllers.GetFriends)
 			auth.GET("/friends/requests", controllers.GetFriendRequests)
 			auth.GET("/friends/sent", controllers.GetSentFriendRequests)
-			auth.POST("/friends/request", controllers.SendFriendRequest)
-			auth.POST("/friends/accept/:id", controllers.AcceptFriendRequest)
-			auth.POST("/friends/reject/:id", controllers.RejectFriendRequest)
+			auth.POST("/friends/request", controllers.SendFriendRequest(hub))
+			auth.POST("/friends/accept/:id", controllers.AcceptFriendRequest(hub))
+			auth.POST("/friends/reject/:id", controllers.RejectFriendRequest(hub))
 			auth.DELETE("/friends/:id", controllers.RemoveFriend)
 
 			// 聊天訊息
 			auth.GET("/chat/:friendId/messages", controllers.GetMessages)
 			auth.GET("/chat/recent", controllers.GetRecentChats)
 			auth.POST("/chat/send", controllers.SendMessage)
+			auth.POST("/chat/upload", controllers.UploadFile)
 			auth.PUT("/messages/:id/read", controllers.MarkAsRead)
 			auth.GET("/messages/unread", controllers.GetUnreadCount)
 
@@ -62,4 +63,7 @@ func SetupRoutes(r *gin.Engine, hub *services.Hub) {
 
 	// 靜態檔案（保留原有功能）
 	r.Static("/static", "./static")
+	
+	// 上傳檔案服務
+	r.Static("/uploads", "./uploads")
 }
